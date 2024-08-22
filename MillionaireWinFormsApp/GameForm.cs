@@ -3,9 +3,18 @@ namespace MillionaireWinFormsApp
     public partial class GameForm : Form
     {
         Game game;
+
+        RadioButton[] radioButtonsTable;
         public GameForm()
         {
             InitializeComponent();
+            radioButtonsTable = [
+                                    radioButton1, radioButton2, radioButton3,
+                                    radioButton4, radioButton5, radioButton6,
+                                    radioButton7, radioButton8, radioButton9,
+                                    radioButton10, radioButton11, radioButton12,
+                                    radioButton13, radioButton14, radioButton15
+                                ];
         }
 
         private void GameForm_Load(object sender, EventArgs e)
@@ -32,19 +41,74 @@ namespace MillionaireWinFormsApp
 
             var isCorrect = game.AcceptAnswer(clickedButton.Text);
 
+            UpdateRadioButtonsTable();
+
             if (isCorrect)
             {
-                game.IncreaseWinning();
+                clickedButton.BackColor = Color.Green;
 
-                currentWinningLabel.Text = game.Player.CurrentWinning.ToString();
+                if (game.IsWin())
+                {
+                    DisabledAnswersButton();
+                    MessageBox.Show("Ура! Вы выиграли 1 мильЕн рублей!");
+                    return;
+                }
 
+                MessageBox.Show($"Молодец! Вы правы! У вас уже {game.WinningTable.GetCurrent().Count} рублей");
+
+                clickedButton.BackColor = Color.CornflowerBlue;
                 ShowNextQuestion();
             }
             else
             {
-                game.End();
+                clickedButton.BackColor = Color.Red;
+                DisabledAnswersButton();
+
                 MessageBox.Show("Игра окончена!");
             }
+        }
+
+        private void DisabledAnswersButton()
+        {
+            answerTextButton1.Enabled = false;
+            answerTextButton2.Enabled = false;
+            answerTextButton3.Enabled = false;
+            answerTextButton4.Enabled = false;
+        }
+
+        private void UpdateRadioButtonsTable()
+        {
+            foreach (var currentRadioButton in radioButtonsTable)
+            {
+                var currentWinningTableRow = game.WinningTable.Winnings.First(x => x.Count.ToString() == currentRadioButton.Text);
+
+                if (game.WinningTable.GetCurrent() != null && currentRadioButton.Text == game.WinningTable.GetCurrent().Count.ToString())
+                {
+                    currentRadioButton.Checked = true;
+                    currentRadioButton.Enabled = true;
+                    currentRadioButton.BackColor = Color.Yellow;
+                }
+                else
+                {
+                    currentRadioButton.Checked = false;
+                    currentRadioButton.Enabled = false;
+
+                    currentRadioButton.BackColor = currentWinningTableRow.IsMilestone ? Color.Aqua : SystemColors.ActiveCaption;
+                }
+            }
+        }
+
+        private void fiftyFiftyButton_Click(object sender, EventArgs e)
+        {
+            fiftyFiftyButton.Enabled = false;
+            fiftyFiftyButton.BackColor = Color.Red;
+
+            var question = game.FiftyFifty();
+
+            answerTextButton1.Text = question.Answers[0].Text;
+            answerTextButton2.Text = question.Answers[1].Text;
+            answerTextButton3.Text = question.Answers[2].Text;
+            answerTextButton4.Text = question.Answers[3].Text;
         }
     }
 }
